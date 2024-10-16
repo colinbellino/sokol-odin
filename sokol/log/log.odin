@@ -60,12 +60,22 @@ when ODIN_OS == .Windows {
 } else when ODIN_OS == .Linux {
     when DEBUG { foreign import sokol_log_clib { "sokol_log_linux_x64_gl_debug.a" } }
     else       { foreign import sokol_log_clib { "sokol_log_linux_x64_gl_release.a" } }
+} else when ODIN_OS == .Freestanding {
+    when DEBUG { foreign import sokol_log_clib { "sokol_log_wasm_gl_debug.a" } }
+    else       { foreign import sokol_log_clib { "sokol_log_wasm_gl_release.a" } }
 } else {
     #panic("This OS is currently not supported")
 }
 
+when ODIN_OS == .Freestanding {
+@(default_calling_convention="c", link_prefix="slog_")
+foreign {
+    func :: proc(tag: cstring, log_level: u32, log_item: u32, message: cstring, line_nr: u32, filename: cstring, user_data: rawptr)  ---
+}
+} else {
 @(default_calling_convention="c", link_prefix="slog_")
 foreign sokol_log_clib {
     func :: proc(tag: cstring, log_level: u32, log_item: u32, message: cstring, line_nr: u32, filename: cstring, user_data: rawptr)  ---
+}
 }
 

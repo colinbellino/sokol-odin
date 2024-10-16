@@ -60,10 +60,29 @@ when ODIN_OS == .Windows {
 } else when ODIN_OS == .Linux {
     when DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:asound", "system:dl", "system:pthread" } }
     else       { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:asound", "system:dl", "system:pthread" } }
+} else when ODIN_OS == .Freestanding {
+    when DEBUG { foreign import sokol_audio_clib { "sokol_audio_wasm_gl_debug.a" } }
+    else       { foreign import sokol_audio_clib { "sokol_audio_wasm_gl_release.a" } }
 } else {
     #panic("This OS is currently not supported")
 }
 
+when ODIN_OS == .Freestanding {
+@(default_calling_convention="c", link_prefix="saudio_")
+foreign {
+    setup :: proc(#by_ptr desc: Desc)  ---
+    shutdown :: proc()  ---
+    isvalid :: proc() -> bool ---
+    userdata :: proc() -> rawptr ---
+    query_desc :: proc() -> Desc ---
+    sample_rate :: proc() -> c.int ---
+    buffer_frames :: proc() -> c.int ---
+    channels :: proc() -> c.int ---
+    suspended :: proc() -> bool ---
+    expect :: proc() -> c.int ---
+    push :: proc(frames: ^f32, #any_int num_frames: c.int) -> c.int ---
+}
+} else {
 @(default_calling_convention="c", link_prefix="saudio_")
 foreign sokol_audio_clib {
     setup :: proc(#by_ptr desc: Desc)  ---
@@ -77,6 +96,7 @@ foreign sokol_audio_clib {
     suspended :: proc() -> bool ---
     expect :: proc() -> c.int ---
     push :: proc(frames: ^f32, #any_int num_frames: c.int) -> c.int ---
+}
 }
 
 Log_Item :: enum i32 {

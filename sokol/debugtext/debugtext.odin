@@ -67,10 +67,55 @@ when ODIN_OS == .Windows {
 } else when ODIN_OS == .Linux {
     when DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_linux_x64_gl_debug.a" } }
     else       { foreign import sokol_debugtext_clib { "sokol_debugtext_linux_x64_gl_release.a" } }
+} else when ODIN_OS == .Freestanding {
+    when DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_wasm_gl_debug.a" } }
+    else       { foreign import sokol_debugtext_clib { "sokol_debugtext_wasm_gl_release.a" } }
 } else {
     #panic("This OS is currently not supported")
 }
 
+when ODIN_OS == .Freestanding {
+@(default_calling_convention="c", link_prefix="sdtx_")
+foreign {
+    setup :: proc(#by_ptr desc: Desc)  ---
+    shutdown :: proc()  ---
+    font_kc853 :: proc() -> Font_Desc ---
+    font_kc854 :: proc() -> Font_Desc ---
+    font_z1013 :: proc() -> Font_Desc ---
+    font_cpc :: proc() -> Font_Desc ---
+    font_c64 :: proc() -> Font_Desc ---
+    font_oric :: proc() -> Font_Desc ---
+    make_context :: proc(#by_ptr desc: Context_Desc) -> Context ---
+    destroy_context :: proc(ctx: Context)  ---
+    set_context :: proc(ctx: Context)  ---
+    get_context :: proc() -> Context ---
+    default_context :: proc() -> Context ---
+    draw :: proc()  ---
+    context_draw :: proc(ctx: Context)  ---
+    draw_layer :: proc(#any_int layer_id: c.int)  ---
+    context_draw_layer :: proc(ctx: Context, #any_int layer_id: c.int)  ---
+    layer :: proc(#any_int layer_id: c.int)  ---
+    font :: proc(#any_int font_index: c.int)  ---
+    canvas :: proc(w: f32, h: f32)  ---
+    origin :: proc(x: f32, y: f32)  ---
+    home :: proc()  ---
+    pos :: proc(x: f32, y: f32)  ---
+    pos_x :: proc(x: f32)  ---
+    pos_y :: proc(y: f32)  ---
+    move :: proc(dx: f32, dy: f32)  ---
+    move_x :: proc(dx: f32)  ---
+    move_y :: proc(dy: f32)  ---
+    crlf :: proc()  ---
+    color3b :: proc(r: u8, g: u8, b: u8)  ---
+    color3f :: proc(r: f32, g: f32, b: f32)  ---
+    color4b :: proc(r: u8, g: u8, b: u8, a: u8)  ---
+    color4f :: proc(r: f32, g: f32, b: f32, a: f32)  ---
+    color1i :: proc(rgba: u32)  ---
+    putc :: proc(c: u8)  ---
+    puts :: proc(str: cstring)  ---
+    putr :: proc(str: cstring, #any_int len: c.int)  ---
+}
+} else {
 @(default_calling_convention="c", link_prefix="sdtx_")
 foreign sokol_debugtext_clib {
     setup :: proc(#by_ptr desc: Desc)  ---
@@ -110,6 +155,7 @@ foreign sokol_debugtext_clib {
     putc :: proc(c: u8)  ---
     puts :: proc(str: cstring)  ---
     putr :: proc(str: cstring, #any_int len: c.int)  ---
+}
 }
 
 Log_Item :: enum i32 {

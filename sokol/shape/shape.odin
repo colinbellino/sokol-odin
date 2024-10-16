@@ -61,10 +61,42 @@ when ODIN_OS == .Windows {
 } else when ODIN_OS == .Linux {
     when DEBUG { foreign import sokol_shape_clib { "sokol_shape_linux_x64_gl_debug.a" } }
     else       { foreign import sokol_shape_clib { "sokol_shape_linux_x64_gl_release.a" } }
+} else when ODIN_OS == .Freestanding {
+    when DEBUG { foreign import sokol_shape_clib { "sokol_shape_wasm_gl_debug.a" } }
+    else       { foreign import sokol_shape_clib { "sokol_shape_wasm_gl_release.a" } }
 } else {
     #panic("This OS is currently not supported")
 }
 
+when ODIN_OS == .Freestanding {
+@(default_calling_convention="c", link_prefix="sshape_")
+foreign {
+    build_plane :: proc(#by_ptr buf: Buffer, #by_ptr params: Plane) -> Buffer ---
+    build_box :: proc(#by_ptr buf: Buffer, #by_ptr params: Box) -> Buffer ---
+    build_sphere :: proc(#by_ptr buf: Buffer, #by_ptr params: Sphere) -> Buffer ---
+    build_cylinder :: proc(#by_ptr buf: Buffer, #by_ptr params: Cylinder) -> Buffer ---
+    build_torus :: proc(#by_ptr buf: Buffer, #by_ptr params: Torus) -> Buffer ---
+    plane_sizes :: proc(tiles: u32) -> Sizes ---
+    box_sizes :: proc(tiles: u32) -> Sizes ---
+    sphere_sizes :: proc(slices: u32, stacks: u32) -> Sizes ---
+    cylinder_sizes :: proc(slices: u32, stacks: u32) -> Sizes ---
+    torus_sizes :: proc(sides: u32, rings: u32) -> Sizes ---
+    element_range :: proc(#by_ptr buf: Buffer) -> Element_Range ---
+    vertex_buffer_desc :: proc(#by_ptr buf: Buffer) -> sg.Buffer_Desc ---
+    index_buffer_desc :: proc(#by_ptr buf: Buffer) -> sg.Buffer_Desc ---
+    vertex_buffer_layout_state :: proc() -> sg.Vertex_Buffer_Layout_State ---
+    position_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
+    normal_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
+    texcoord_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
+    color_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
+    color_4f :: proc(r: f32, g: f32, b: f32, a: f32) -> u32 ---
+    color_3f :: proc(r: f32, g: f32, b: f32) -> u32 ---
+    color_4b :: proc(r: u8, g: u8, b: u8, a: u8) -> u32 ---
+    color_3b :: proc(r: u8, g: u8, b: u8) -> u32 ---
+    mat4 :: proc(m: ^f32) -> Mat4 ---
+    mat4_transpose :: proc(m: ^f32) -> Mat4 ---
+}
+} else {
 @(default_calling_convention="c", link_prefix="sshape_")
 foreign sokol_shape_clib {
     build_plane :: proc(#by_ptr buf: Buffer, #by_ptr params: Plane) -> Buffer ---
@@ -91,6 +123,7 @@ foreign sokol_shape_clib {
     color_3b :: proc(r: u8, g: u8, b: u8) -> u32 ---
     mat4 :: proc(m: ^f32) -> Mat4 ---
     mat4_transpose :: proc(m: ^f32) -> Mat4 ---
+}
 }
 
 Range :: struct {

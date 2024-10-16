@@ -61,13 +61,24 @@ when ODIN_OS == .Windows {
 } else when ODIN_OS == .Linux {
     when DEBUG { foreign import sokol_glue_clib { "sokol_glue_linux_x64_gl_debug.a" } }
     else       { foreign import sokol_glue_clib { "sokol_glue_linux_x64_gl_release.a" } }
+} else when ODIN_OS == .Freestanding {
+    when DEBUG { foreign import sokol_glue_clib { "sokol_glue_wasm_gl_debug.a" } }
+    else       { foreign import sokol_glue_clib { "sokol_glue_wasm_gl_release.a" } }
 } else {
     #panic("This OS is currently not supported")
 }
 
+when ODIN_OS == .Freestanding {
+@(default_calling_convention="c", link_prefix="sglue_")
+foreign {
+    environment :: proc() -> sg.Environment ---
+    swapchain :: proc() -> sg.Swapchain ---
+}
+} else {
 @(default_calling_convention="c", link_prefix="sglue_")
 foreign sokol_glue_clib {
     environment :: proc() -> sg.Environment ---
     swapchain :: proc() -> sg.Swapchain ---
+}
 }
 
